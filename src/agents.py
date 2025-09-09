@@ -234,17 +234,50 @@ class RFEAgentManager:
         print(f"⚠️  No index found for {persona}")
         return None
 
+    async def get_rag_context(self, persona: str, query: str, top_k: int = 3) -> str:
+        """Retrieve relevant context from agent's knowledge base using RAG"""
+        index = await self.get_agent_index(persona)
+        
+        if not index:
+            return "No specific knowledge base available for this agent."
+        
+        try:
+            # Create retriever and get relevant documents
+            retriever = index.as_retriever(similarity_top_k=top_k)
+            nodes = retriever.retrieve(query)
+            
+            if not nodes:
+                return "No relevant context found in knowledge base."
+            
+            # Format the retrieved context
+            context_parts = []
+            for i, node in enumerate(nodes, 1):
+                content = node.get_content()
+                source = node.metadata.get("file_path", "unknown source")
+                context_parts.append(f"[Context {i} from {source}]:\n{content}")
+            
+            context = "\n\n".join(context_parts)
+            print(f"🔍 Retrieved {len(nodes)} context chunks for {persona}")
+            return context
+            
+        except Exception as e:
+            print(f"❌ RAG retrieval failed for {persona}: {e}")
+            return "Error retrieving context from knowledge base."
+
     async def analyze_rfe_streaming(
         self, persona: str, rfe_description: str, config: Dict[str, Any]
     ) -> AsyncGenerator[Dict[str, Any], None]:
-        """Simple streaming RFE analysis"""
-        print(f"🔍 {persona} starting streaming analysis...")
+        """RAG-enhanced streaming RFE analysis"""
+        print(f"🔍 {persona} starting RAG-enhanced analysis...")
+
+        # Get relevant context from agent's knowledge base using RAG
+        context = await self.get_rag_context(persona, rfe_description)
 
         prompt = get_prompt(
             PROMPT_NAMES.AGENT_ANALYSIS,
             {
                 "rfe_description": rfe_description,
-                "context": "No specific knowledge base available.",
+                "context": context,
                 "persona": config.get("name", persona),
             },
         )

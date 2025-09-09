@@ -27,10 +27,15 @@ def main():
     print(f"📋 Deployment: {config['name']}")
     print(f"🎯 Services: {', '.join(config['services'].keys())}")
 
-    # Start the API server directly
+    # Start the API server directly with correct binding
+    import os
     try:
         print("🌐 Starting API server...")
-        subprocess.run([sys.executable, "-m", "llama_deploy.apiserver", "--host", "0.0.0.0", "--port", "8000"], check=True)
+        # Set environment variables to force correct binding
+        env = os.environ.copy()
+        env["LLAMA_DEPLOY_HOST"] = "0.0.0.0"
+        env["LLAMA_DEPLOY_PORT"] = "8000"
+        subprocess.run([sys.executable, "-m", "llama_deploy.apiserver"], check=True, env=env)
     except KeyboardInterrupt:
         print("\n⏹️  Deployment stopped by user")
     except Exception as e:
