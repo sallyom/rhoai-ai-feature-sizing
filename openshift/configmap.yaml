@@ -8,7 +8,7 @@ metadata:
 data:
   # LLM Configuration - Using OpenShift AI endpoint
   LLM_PROVIDER: "openshift_ai"
-  EMBEDDING_PROVIDER: "openai"
+  EMBEDDING_PROVIDER: "local"
   
   # Chunk settings
   CHUNK_SIZE: "512"

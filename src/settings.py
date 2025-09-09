@@ -69,11 +69,10 @@ class ProviderRegistry:
             "defaults": {"model": "text-embedding-3-small"},
             "env_map": {"api_key": "OPENAI_API_KEY"},
         },
-        "huggingface": {
-            "module": "llama_index.embeddings.huggingface",
-            "class": "HuggingFaceEmbedding",
-            "defaults": {"model_name": "sentence-transformers/all-MiniLM-L6-v2"},
-            "package": "llama-index-embeddings-huggingface",
+        "local": {
+            "module": "src.local_embeddings",
+            "class": "LocalEmbedding",
+            "defaults": {"model_name": "all-MiniLM-L6-v2"},
         },
         "ollama": {
             "module": "llama_index.embeddings.ollama",
