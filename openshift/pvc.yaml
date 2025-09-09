@@ -2,7 +2,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: rhoai-uploads-pvc
-  namespace: sallyom-rhoai-feature
+  namespace: rhoai-ai-feature-sizing
   labels:
     app: rhoai-ai-feature-sizing
     component: storage
@@ -18,7 +18,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: rhoai-output-pvc
-  namespace: sallyom-rhoai-feature
+  namespace: rhoai-ai-feature-sizing
   labels:
     app: rhoai-ai-feature-sizing
     component: storage

@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: rhoai-ai-feature-sizing
-  namespace: rhoai-ai-feature-sizing
+  #namespace: rhoai-ai-feature-sizing
   labels:
     app: rhoai-ai-feature-sizing
 spec:
@@ -17,13 +17,15 @@ spec:
     spec:
       containers:
       - name: rhoai-app
-        image: quay.io/rcook/tools:rhoai
+        image: quay.io/sallyom/rhoai-feature:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 4501
           name: control-plane
-        - containerPort: 8000
-          name: api-server
+        - containerPort: 8001
+          name: upload-api
+        - containerPort: 3000
+          name: ui
         env:
         - name: PYTHONUNBUFFERED
           value: "1"

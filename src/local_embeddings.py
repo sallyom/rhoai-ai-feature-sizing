@@ -14,18 +14,15 @@ class LocalEmbedding(BaseEmbedding):
     def __init__(
         self,
         model_name: str = "all-MiniLM-L6-v2",
-        device: str = "cpu",
         **kwargs: Any,
     ) -> None:
         """Initialize local embedding model.
         
         Args:
             model_name: Name of the sentence-transformers model
-            device: Device to run on (cpu/cuda)
         """
         super().__init__(**kwargs)
         self.model_name = model_name
-        self.device = device
         self._model: Optional[SentenceTransformer] = None
         
     @property
@@ -33,7 +30,7 @@ class LocalEmbedding(BaseEmbedding):
         """Lazy load the model."""
         if self._model is None:
             logger.info(f"Loading local embedding model: {self.model_name}")
-            self._model = SentenceTransformer(self.model_name, device=self.device)
+            self._model = SentenceTransformer(self.model_name, device="cpu")
             logger.info("Local embedding model loaded successfully")
         return self._model
 

@@ -2,7 +2,7 @@ apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
   name: rhoai-api
-  namespace: sallyom-rhoai-feature
+  #namespace: rhoai-ai-feature-sizing
   labels:
     app: rhoai-ai-feature-sizing
     component: api
@@ -12,7 +12,7 @@ spec:
     name: rhoai-ai-feature-sizing
     weight: 100
   port:
-    targetPort: api-server
+    targetPort: control-plane
   tls:
     termination: edge
     insecureEdgeTerminationPolicy: Redirect
@@ -22,7 +22,7 @@ apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
   name: rhoai-ui
-  namespace: sallyom-rhoai-feature
+  #namespace: rhoai-ai-feature-sizing
   labels:
     app: rhoai-ai-feature-sizing
     component: ui
@@ -33,7 +33,6 @@ spec:
     weight: 100
   port:
     targetPort: ui
-  path: /deployments/rhoai-ai-feature-sizing/ui
   tls:
     termination: edge
     insecureEdgeTerminationPolicy: Redirect

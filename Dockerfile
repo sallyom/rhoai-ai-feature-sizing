@@ -2,42 +2,40 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y git curl && rm -rf /var/lib/apt/lists/*
+# Install all dependencies including Node.js
+RUN apt-get update && apt-get install -y \
+    git curl build-essential && \
+    rm -rf /var/lib/apt/lists/* && \
+    curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
+    apt-get install -y nodejs && \
+    pip install --no-cache-dir uv && \
+    npm --version && node --version
 
-# Install Node.js
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
-    apt-get install -y nodejs
+# Copy dependency files and install Python dependencies
+COPY pyproject.toml uv.lock* README.md ./
+RUN uv sync --frozen
 
-COPY pyproject.toml ./
-COPY uv.lock ./
-COPY README.md ./
-
-RUN pip install uv && uv sync --frozen
-
+# Copy source and build UI
 COPY src ./src
 COPY ui ./ui
 COPY data ./data
 COPY deployment.yml ./
 
-# Install UI dependencies
+# Build UI dependencies and compile TypeScript
 WORKDIR /app/ui
-RUN npm i -g pnpm
-RUN pnpm install
+RUN npm install && npx tsc
 WORKDIR /app
 
-RUN uv run generate
-
-RUN chmod -R g+w .venv/
-
-ENV HOME=/app
-RUN mkdir -p /app/.config/llamactl && chmod -R 777 /app/.config
-
-EXPOSE 4501
-
-# Set permissions for OpenShift (any user can access)
-# Include all files that uv might need to write
-RUN chmod -R g+w /app && \
+# Create directories and set permissions for OpenShift
+RUN mkdir -p output/python-rag uploads .config/llamactl && \
+    chmod -R 777 uploads output .config && \
+    chmod -R g+w /app && \
     chmod g+w /tmp
+
+# Environment setup
+ENV HOME=/app
+
+EXPOSE 4501 8001 3000
 
 COPY startup.sh ./
 RUN chmod +x startup.sh
