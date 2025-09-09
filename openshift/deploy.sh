@@ -14,7 +14,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-NAMESPACE="rhoai-ai-feature-sizing"
+NAMESPACE="${NAMESPACE:-rhoai-ai-feature-sizing}"
 APP_NAME="rhoai-ai-feature-sizing"
 DEFAULT_REGISTRY="quay.io/gkrumbach07/llama-index-demo"
 DEFAULT_TAG="latest"
@@ -62,10 +62,15 @@ echo -e "Image: ${BLUE}${IMAGE_FULL_NAME}${NC}"
 echo -e "${YELLOW}💡 If image doesn't exist, run: ${BLUE}./openshift/build.sh${NC}"
 echo ""
 
-# Update deployment with new image
-echo -e "${YELLOW}🔧 Updating deployment manifest...${NC}"
+# Update deployment with new image and namespace
+echo -e "${YELLOW}🔧 Updating deployment manifests...${NC}"
 sed -i.bak "s|image:.*|image: ${IMAGE_FULL_NAME}|g" openshift/deployment.yaml
-echo -e "${GREEN}✅ Deployment manifest updated${NC}"
+# Update namespace in all manifests if different from default
+if [ "$NAMESPACE" != "rhoai-ai-feature-sizing" ]; then
+    sed -i.bak "s|namespace: rhoai-ai-feature-sizing|namespace: ${NAMESPACE}|g" openshift/*.yaml
+    sed -i.bak "s|name: rhoai-ai-feature-sizing|name: ${NAMESPACE}|g" openshift/namespace.yaml
+fi
+echo -e "${GREEN}✅ Deployment manifests updated${NC}"
 echo ""
 
 # Deploy to OpenShift
