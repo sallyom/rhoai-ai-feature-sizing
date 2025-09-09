@@ -6,8 +6,8 @@ metadata:
   labels:
     app: rhoai-ai-feature-sizing
 data:
-  # LLM Configuration
-  LLM_PROVIDER: "openai"
+  # LLM Configuration - Using OpenShift AI endpoint
+  LLM_PROVIDER: "openshift_ai"
   EMBEDDING_PROVIDER: "openai"
   
   # Chunk settings

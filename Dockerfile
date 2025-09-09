@@ -24,8 +24,9 @@ WORKDIR /app
 # Copy dependency files
 COPY pyproject.toml uv.lock* README.md ./
 
-# Install Python dependencies
-RUN uv sync --no-dev --frozen && chmod -R g+w .venv
+# Install Python dependencies (split to avoid QEMU segfaults in cross-platform builds)
+RUN uv sync --no-dev --frozen
+RUN chmod -R g+w .venv
 
 # Copy source code
 COPY src/ ./src/
