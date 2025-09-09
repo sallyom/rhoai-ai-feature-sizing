@@ -66,8 +66,8 @@ COPY --from=ui-builder /app/uv.lock* ./
 COPY --from=ui-builder /app/README.md ./
 
 # Set permissions for OpenShift (any user can access)
-# Include .venv directory for uv operations
-RUN chmod -R g+w /app/src /app/output /app/deploy.py /app/deployment.yml /app/.venv && \
+# Include all files that uv might need to write
+RUN chmod -R g+w /app && \
     chmod g+w /tmp
 
 # Expose ports

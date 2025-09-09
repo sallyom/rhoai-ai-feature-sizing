@@ -7,11 +7,12 @@ import asyncio
 from pathlib import Path
 import yaml
 
-from llama_deploy.apiserver import serve
+import subprocess
+import sys
 
 
-async def main():
-    """Deploy the services using llama-deploy"""
+def main():
+    """Deploy the services using llama-deploy CLI"""
 
     # Load the deployment configuration
     config_path = Path("deployment.yml")
@@ -26,9 +27,10 @@ async def main():
     print(f"📋 Deployment: {config['name']}")
     print(f"🎯 Services: {', '.join(config['services'].keys())}")
 
-    # Start the API server
+    # Start the API server directly
     try:
-        await serve(config_path, host="0.0.0.0", port=8000, reload=False)
+        print("🌐 Starting API server...")
+        subprocess.run([sys.executable, "-m", "llama_deploy.apiserver", "--host", "0.0.0.0", "--port", "8000"], check=True)
     except KeyboardInterrupt:
         print("\n⏹️  Deployment stopped by user")
     except Exception as e:
@@ -38,4 +40,4 @@ async def main():
 if __name__ == "__main__":
     print("🚀 RHOAI AI Feature Sizing - LlamaDeploy")
     print("=" * 50)
-    asyncio.run(main())
+    main()

@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 class LocalEmbedding(BaseEmbedding):
-    """Local embedding using sentence-transformers with minimal dependencies."""
+    """Local embedding using sentence-transformers with all-MiniLM-L6-v2."""
     
     def __init__(
         self,

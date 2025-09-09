@@ -2,7 +2,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: rhoai-uploads-pvc
-  namespace: rhoai-ai-feature-sizing
+  namespace: sallyom-rhoai-feature
   labels:
     app: rhoai-ai-feature-sizing
     component: storage
@@ -12,13 +12,13 @@ spec:
   resources:
     requests:
       storage: 10Gi
-  storageClassName: standard-csi
+  storageClassName: ocs-external-storagecluster-ceph-rbd
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: rhoai-output-pvc
-  namespace: rhoai-ai-feature-sizing
+  namespace: sallyom-rhoai-feature
   labels:
     app: rhoai-ai-feature-sizing
     component: storage
@@ -28,4 +28,4 @@ spec:
   resources:
     requests:
       storage: 20Gi
-  storageClassName: standard-csi
+  storageClassName: ocs-external-storagecluster-ceph-rbd
