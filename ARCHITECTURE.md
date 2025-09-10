@@ -2,7 +2,7 @@
 
 ## Overview
 
-RHOAI implements a production-ready architecture with **LlamaDeploy Python backend** and **@llamaindex/server TypeScript frontend**, designed for enterprise-grade multi-agent analysis workflows.
+RHOAI implements a containerized multi-agent system with **LlamaDeploy workflows**, **FastAPI upload service**, and **@llamaindex/server TypeScript UI**, designed for enterprise RFE analysis workflows. All services run in a single container for simplified deployment.
 
 ## Architecture Principles
 
@@ -15,153 +15,163 @@ RHOAI implements a production-ready architecture with **LlamaDeploy Python backe
 
 ## System Components
 
-### Python Backend (LlamaDeploy)
+### LlamaDeploy Workflow Engine
 
-**Purpose**: Production workflow orchestration and multi-agent coordination
+**Purpose**: Multi-agent workflow orchestration and RFE analysis
 
 ```
 ┌─────────────────────────────────────────┐
-│          PYTHON BACKEND                 │
-│          (LlamaDeploy)                  │
+│       LLAMADEPLOY WORKFLOWS             │
+│           (Port 4501)                   │
 │                                         │
-│ 🔄 Workflow Engine                     │  
-│   • LlamaDeploy orchestration          │
-│   • Multi-agent coordination           │
-│   • Event-driven state management      │
+│ 🔄 Workflow Orchestration              │  
+│   • rfe-builder-workflow (primary)     │
+│   • jira-rfe-to-architecture-workflow  │
+│   • Event-driven execution             │
 │                                         │
-│ 🤖 Agent System                       │
-│   • RFEAgentManager                    │
-│   • Persona-specific RAG retrieval     │
-│   • Analysis synthesis                 │
+│ 🤖 Multi-Agent System                  │
+│   • 16 specialized agent personas      │
+│   • YAML-based configuration           │
+│   • Parallel analysis execution        │
 │                                         │
-│ 📚 Knowledge Integration               │
-│   • Python RAG index loading           │
-│   • Vector similarity search           │
-│   • Context generation                 │
+│ 📚 RAG Integration                     │
+│   • Local vector index loading         │
+│   • Agent-specific knowledge bases     │
+│   • Context-aware retrieval            │
 │                                         │
-│ 🌐 API Services                       │
-│   • REST API endpoints                 │
-│   • Streaming responses                │
-│   • Health monitoring                  │
+│ 🎯 Artifact Generation                 │
+│   • RFE documents                      │
+│   • Architecture diagrams              │
+│   • Implementation timelines           │
 └─────────────────────────────────────────┘
 ```
 
 **Key Files**:
-- `backend/src/rfe_builder_workflow.py` - Main RFE Builder workflow definition
-- `backend/src/artifact_editor_workflow.py` - Artifact editing workflow
-- `backend/src/agents.py` - Multi-agent management
-- `backend/llama_deploy.yml` - Deployment configuration
+- `src/rfe_builder_workflow.py` - Primary RFE analysis workflow
+- `src/jira_rfe_to_architecture_workflow.py` - Architecture generation workflow
+- `src/agents.py` - Multi-agent coordination
+- `deployment.yml` - LlamaDeploy configuration
 
 **Services**: 
-- LlamaDeploy API Server (port 8000)
-- Multi-agent RFE workflow orchestration
-- Vector index management and RAG retrieval
+- LlamaDeploy API Server (port 4501)
+- Workflow orchestration and task management
+- Agent-based RFE analysis
 
-### TypeScript Frontend (@llamaindex/server)
+### TypeScript UI Server (@llamaindex/server)
 
-**Purpose**: Modern chat interface and user experience
+**Purpose**: Chat interface with workflow integration
 
 ```
 ┌─────────────────────────────────────────┐
-│       TYPESCRIPT FRONTEND              │
+│       TYPESCRIPT UI SERVER             │
 │       (@llamaindex/server)             │
+│           (Port 3000)                   │
 │                                         │
 │ 💬 Chat Interface                      │
-│   • Professional chat UI               │
-│   • Streaming response handling        │
-│   • Starter questions                  │
+│   • LlamaIndexServer chat UI           │
+│   • Real-time streaming responses      │
+│   • Starter questions for RFE input    │
 │                                         │
-│ 🔗 API Integration                     │
-│   • LlamaDeploy connection            │
-│   • Real-time workflow updates        │
-│   • Task management                   │
+│ 🔗 LlamaDeploy Integration             │
+│   • Direct workflow connection         │
+│   • Task submission and monitoring     │
+│   • Progress tracking components       │
 │                                         │
-│ 🎨 User Experience                    │
-│   • Responsive design                 │
-│   • Progress indicators               │
-│   • Error handling                    │
+│ 🎨 Custom Components                   │
+│   • Agent analysis summaries           │
+│   • RFE builder progress tracking      │
+│   • Multi-agent workflow visualization │
 └─────────────────────────────────────────┘
 ```
 
 **Key Files**:
-- `frontend/index.ts` - UI server configuration
-- `frontend/package.json` - Dependencies and scripts
+- `ui/index.ts` - UI server configuration and startup
+- `ui/components/` - Custom React components for workflows
+- `ui/layout/header.tsx` - Layout components
 
 **Services**:
-- Frontend Server (port 3001)  
-- Chat UI with LlamaDeploy integration
-- Real-time workflow progress tracking
+- UI Server (port 3000)
+- Standalone LlamaIndexServer with custom components
+- Direct integration with LlamaDeploy workflows
 
-### Python RAG Ingestion (Separate)
+### FastAPI Upload Service
 
-**Purpose**: Knowledge base preparation and indexing
+**Purpose**: File upload and dynamic content management
 
 ```
 ┌─────────────────────────────────────────┐
-│         RAG INGESTION PIPELINE         │
+│         FASTAPI UPLOAD SERVICE         │
+│            (Port 8001)                  │
 │                                         │
-│ 📥 Data Sources                        │  
-│   • GitHub repositories                │
-│   • Local documentation                │
-│   • Web pages                          │
+│ 📤 File Upload API                     │  
+│   • Multi-file upload endpoints        │
+│   • Document processing                │
+│   • Content validation                 │
 │                                         │
-│ 🔄 Processing                          │
-│   • Document chunking                  │
-│   • Embedding generation (OpenAI)      │
-│   • Metadata extraction                │
+│ 🔄 RAG Integration                     │
+│   • Dynamic index updates              │
+│   • Agent knowledge base refresh       │
+│   • Real-time content processing       │
 │                                         │
-│ 💾 Index Creation                      │
-│   • FAISS vector stores                │
-│   • Persona-specific indices           │
-│   • Metadata and statistics            │
+│ 🛡️ Content Management                  │
+│   • File type validation               │
+│   • Storage management                 │
+│   • CORS handling                      │
 └─────────────────────────────────────────┘
 ```
 
 **Key Files**:
-- `python-rag-ingestion/rhoai_rag_ingestion/cli.py` - Ingestion pipeline
-- Agent configurations in `src/agents/*.yaml`
+- `src/api_server.py` - FastAPI application setup
+- `src/upload_service.py` - Upload processing logic
+- `src/generate.py` - RAG index generation
+- `src/ingestion.py` - Content ingestion pipeline
 
-**Output**: Vector indexes saved to `output/python-rag/{agent_name}/`
+**Features**: Dynamic file upload, RAG index updates, agent knowledge refresh
 
 ## Data Flow
 
-### Preparation Phase (Python Ingestion)
+### Preparation Phase (RAG Index Generation)
 
-1. **Agent Config Reading**: Parse YAML configurations from `src/agents/`
-2. **Source Processing**: Clone GitHub repositories, read local directories
-3. **Document Processing**: Chunk text, generate embeddings via OpenAI
-4. **Index Creation**: Build FAISS vector stores with persona-specific metadata
-5. **Persistence**: Save indexes to `output/python-rag/{agent_name}/`
+1. **Agent Configuration**: Parse 16 agent YAML files from `src/agents/`
+2. **Data Source Processing**: Load local data directories and configured sources
+3. **Document Ingestion**: Process documents with chunking and metadata extraction
+4. **Embedding Generation**: Create embeddings using OpenAI or local models
+5. **Index Storage**: Save agent-specific vector indices to `output/` directory
 
-### Runtime Phase (LlamaDeploy Workflow)
+### Runtime Phase (Multi-Agent Workflow)
 
-1. **User Input**: RFE submission via chat interface (port 3001)
-2. **Workflow Trigger**: LlamaDeploy receives task via API (port 8000)
-3. **Agent Initialization**: Load agent configs and RAG indices
-4. **Multi-Agent Analysis**: Parallel analysis by all 7 agent personas
-5. **Context Retrieval**: Vector similarity search for each agent's knowledge base
-6. **Synthesis**: Combine all agent analyses into comprehensive output
-7. **Deliverable Generation**: Create component teams, architecture, timeline
-8. **Streaming Response**: Real-time updates back to chat interface
+1. **User Input**: RFE submission via UI chat interface (port 3000)
+2. **Workflow Trigger**: LlamaDeploy receives task via control plane (port 4501)
+3. **Agent Orchestration**: Initialize all 16 agent personas with their indices
+4. **Parallel Analysis**: Concurrent analysis by all specialized agents
+5. **Context Retrieval**: Agent-specific RAG queries for domain knowledge
+6. **Synthesis**: Combine analyses into comprehensive RFE document
+7. **Artifact Generation**: Create implementation plans, timelines, architecture
+8. **Streaming Response**: Real-time updates via UI components
 
-### API Access (Programmatic)
+### API Integration
 
-1. **Task Creation**: POST to `/deployments/rhoai/tasks/create`
-2. **Event Streaming**: GET `/deployments/rhoai/tasks/{task_id}/events`
-3. **Result Retrieval**: Complete analysis results in structured JSON
+1. **Workflow Management**: LlamaDeploy API at port 4501
+2. **File Upload**: FastAPI service at port 8001
+3. **UI Access**: Direct chat interface at port 3000
+4. **Health Monitoring**: Built-in endpoints for system status
 
 ## Component Communication
 
-### LlamaDeploy API
+### Service Communication
 
-Frontend and backend communicate via LlamaDeploy API:
+All services run in a single container with inter-service communication:
 
 ```
-Frontend (port 3001)  ←──HTTP API──→  LlamaDeploy (port 8000)
-│                                            │
-├── Chat interface                           ├── Workflow orchestration
-├── Real-time updates                        ├── Task management  
-└── Progress tracking                        └── Agent coordination
+UI Server (port 3000)  ←──HTTP API──→  LlamaDeploy (port 4501)
+│                                           │
+├── Chat interface                          ├── Workflow orchestration  
+├── Custom components                       ├── Multi-agent coordination
+└── Real-time streaming                     └── Task management
+                                            │
+                                            ├──→ Upload API (port 8001)
+                                            │    ├── File processing
+                                            │    └── Dynamic RAG updates
 ```
 
 ### Shared Storage Schema
@@ -171,10 +181,10 @@ Python ingestion and backend share filesystem storage:
 ```
 output/python-rag/{agent_persona}/
 ├── docstore.json         # Document content and metadata
-├── default__vector_store.json  # FAISS vector embeddings  
-├── index_store.json      # LlamaIndex configuration
-├── graph_store.json      # Relationship data
-└── metadata.json         # Agent info and statistics
+├── default__vector_store.json  # Vector embeddings
+├── index_store.json      # LlamaIndex configuration  
+├── graph_store.json      # Knowledge relationships
+└── metadata.json         # Agent statistics and config
 ```
 
 ### Agent Configuration Schema
@@ -183,22 +193,25 @@ Agents are defined in YAML with JSON Schema validation:
 
 ```yaml
 # yaml-language-server: $schema=./agent-schema.json
-name: "Agent Display Name"
-persona: "UNIQUE_IDENTIFIER"
-role: "Role description"
+name: "Product Manager"
+persona: "PRODUCT_MANAGER"
+role: "Product Management and Business Strategy"
+isRootAgent: false
+
+expertise:
+  - "market-analysis"
+  - "competitive-intelligence"
+  - "product-roadmapping"
+
+systemMessage: |
+  You are Alex, a Product Manager with expertise in translating
+  customer needs into business value...
 
 dataSources:
-  - "local-directory"
-  - name: "github-source"
+  - "data/product-management"
+  - name: "competitor-analysis"
     type: "github"
-    source: "org/repo"
-    options:
-      path: "docs/"
-      fileTypes: [".md"]
-
-analysisPrompt:
-  template: "Analysis prompt with {rfe_description} variables"
-  templateVars: ["rfe_description", "context"]
+    source: "company/market-research"
 ```
 
 ## LlamaDeploy Workflow Architecture
@@ -217,47 +230,42 @@ graph TD
 
 ### Agent Orchestration
 
-The `RFEWorkflow` coordinates all agent personas:
+The `rfe_builder_workflow` coordinates all 16 agent personas:
 
 ```python
-class RFEWorkflow(Workflow):
+class RFEBuilderWorkflow(Workflow):
     @step
-    async def analyze_with_agents(self, ev: RFEAnalysisEvent):
-        # Parallel execution of all 7 agents
-        events = []
-        for persona, config in agent_personas.items():
-            analysis = await self.agent_manager.analyze_rfe(
-                persona, ev.rfe_description, config
-            )
-            events.append(AgentAnalysisCompleteEvent(...))
-        return events
+    async def run_multi_agent_analysis(self, ctx: Context, ev: StartEvent):
+        # Parallel execution of all 16 agents
+        agent_manager = RFEAgentManager()
+        analyses = await agent_manager.analyze_rfe_with_all_agents(
+            ev.input, ctx.session.get("chat_history", [])
+        )
+        return AgentAnalysesCompleteEvent(analyses=analyses)
 ```
 
 ### Multi-Agent Coordination
 
 ```
 ┌─────────────────────────────────────────┐
-│           LlamaDeploy Workflow          │
+│          16-Agent Orchestration         │
 │                                         │
-│  ┌───────┐  ┌───────┐  ┌───────────┐   │
-│  │  PM   │  │ UXD   │  │BACKEND_ENG│   │
-│  └───────┘  └───────┘  └───────────┘   │
-│      │          │           │          │
-│      └──────────┼───────────┘          │
-│                 │                      │
-│  ┌───────────┐  │  ┌───────────────┐   │
-│  │FRONTEND_  │  │  │   ARCHITECT   │   │
-│  │   ENG     │  │  │               │   │
-│  └───────────┘  │  └───────────────┘   │
-│      │          │           │          │
-│      └──────────┼───────────┘          │
-│                 │                      │
-│         ┌───────────────┐              │
-│         │PRODUCT_OWNER │              │
-│         │SME_RESEARCHER│              │
-│         └───────────────┘              │
+│ ┌─────────┐ ┌─────────────┐ ┌─────────┐ │
+│ │Product  │ │Engineering  │ │   UX    │ │  
+│ │Manager  │ │  Manager    │ │Architect│ │
+│ └─────────┘ └─────────────┘ └─────────┘ │
+│ ┌─────────┐ ┌─────────────┐ ┌─────────┐ │
+│ │  Staff  │ │    Team     │ │Delivery │ │
+│ │Engineer │ │    Lead     │ │ Owner   │ │
+│ └─────────┘ └─────────────┘ └─────────┘ │
+│ ┌─────────┐ ┌─────────────┐ ┌─────────┐ │
+│ │Content  │ │Documentation│ │Technical│ │
+│ │Strategy │ │Prog Manager │ │ Writer  │ │
+│ └─────────┘ └─────────────┘ └─────────┘ │
+│            + 7 more agents              │
 │                                         │
-│     → Synthesis → Deliverables         │
+│     → Parallel Analysis → Synthesis    │
+│     → RFE Artifacts → Implementation   │
 └─────────────────────────────────────────┘
 ```
 
@@ -343,17 +351,21 @@ class SynthesisCompleteEvent(Event):
 ### Deployment Architecture
 
 ```bash
-# 1. Start LlamaDeploy API server
-uv run -m llama_deploy.apiserver  # Port 8000
+# Container startup (via startup.sh)
+# 1. Generate RAG indices
+uv run python src/rag.py ingest
 
-# 2. Deploy workflow
-uv run llamactl deploy llama_deploy.yml
+# 2. Start LlamaDeploy API server (background)
+uv run -m llama_deploy.apiserver  # Port 4501
 
-# 3. Start frontend
-npm run dev  # Port 3001
+# 3. Start Upload API server (background) 
+uv run python src/api_server.py  # Port 8001
 
-# 4. Optional: Scheduled ingestion updates
-0 2 * * * cd /app/python-rag-ingestion && rhoai-rag ingest
+# 4. Start UI server (background)
+cd ui && npm start  # Port 3000
+
+# 5. Deploy workflows
+uv run llamactl deploy deployment.yml
 ```
 
 ### Production Monitoring
@@ -377,58 +389,62 @@ curl http://localhost:3001/health
 
 ### Adding New Agents
 
-1. Create YAML configuration in `src/agents/`
-2. Configure data sources (local directories or GitHub repositories)
-3. Run Python ingestion: `cd python-rag-ingestion && rhoai-rag ingest`
-4. Restart backend: LlamaDeploy automatically reloads agent configurations
+1. Create YAML configuration in `src/agents/` (16 agents currently configured)
+2. Configure data sources and expertise areas in YAML
+3. Regenerate indices: `uv run generate` 
+4. Restart container: Agents are automatically loaded from YAML configs
 
 ### Updating Knowledge Bases
 
-1. **Local Sources**: Update files in `data/` directories, re-run ingestion
-2. **GitHub Sources**: Re-run Python ingestion to pull latest commits
-3. **Agent Config**: Modify YAML files, LlamaDeploy hot-reloads configurations
+1. **Local Sources**: Update files in `data/` directories, re-run `uv run generate`
+2. **Dynamic Upload**: Use Upload API at port 8001 for real-time content updates
+3. **Agent Configs**: Modify YAML files in `src/agents/`, restart container
 
-### Backend Development
-
-```bash
-cd backend
-
-# Install development dependencies
-uv sync --dev
-
-# Run tests
-uv run pytest
-
-# Type checking  
-uv run mypy src/
-
-# Restart workflow
-uv run llamactl deploy llama_deploy.yml
-```
-
-### Frontend Development
+### Development Workflow
 
 ```bash
-cd frontend
-
 # Install dependencies
-npm install
+uv sync
 
-# Development mode with hot reload
-npm run dev
+# Generate RAG indices
+uv run generate
 
-# Build for production
-npm run build
+# Development mode (manual startup)
+# Terminal 1: LlamaDeploy API
+uv run -m llama_deploy.apiserver
+
+# Terminal 2: Upload API  
+uv run python src/api_server.py
+
+# Terminal 3: UI Server
+cd ui && npm run dev
+
+# Terminal 4: Deploy workflows
+uv run llamactl deploy deployment.yml
+
+# Type checking and tests
+uv run mypy src/
+uv run pytest
 ```
 
 ## Integration Points
 
 ### API Endpoints
 
-- **Task Management**: `/deployments/rhoai/tasks/*`
-- **Event Streaming**: `/deployments/rhoai/tasks/{task_id}/events`
-- **Health Checks**: `/health`, `/docs`
-- **Workflow Status**: `/deployments/rhoai/status`
+**LlamaDeploy API (Port 4501)**:
+- **Workflow Management**: `/deployments/rhoai-ai-feature-sizing/`
+- **Task Creation**: `/deployments/rhoai-ai-feature-sizing/tasks/create`
+- **Event Streaming**: `/deployments/rhoai-ai-feature-sizing/tasks/{task_id}/events`
+- **Health Checks**: `/health`
+
+**Upload API (Port 8001)**:
+- **File Upload**: `/upload/files/`
+- **RAG Management**: `/rag/regenerate`
+- **API Documentation**: `/docs`
+
+**UI Server (Port 3000)**:
+- **Chat Interface**: Direct web interface
+- **Custom Components**: Workflow-specific UI elements
 
 ### External Systems
 

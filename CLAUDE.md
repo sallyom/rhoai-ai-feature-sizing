@@ -21,6 +21,9 @@ uv run llamactl deploy deployment.yml
 # Type checking
 uv run mypy src/
 
+# Upload API server
+uv run python src/api_server.py
+
 # Run tests
 uv run pytest
 ```
@@ -38,34 +41,41 @@ npm run build
 ```
 
 ### Development Workflow
-1. Start LlamaDeploy API server: `uv run -m llama_deploy.apiserver` (runs on port 4501)
-2. Deploy workflows: `uv run llamactl deploy deployment.yml`
-3. Start frontend: `cd ui && npm run dev` (serves on port 3000)
-4. Access UI at: http://localhost:4501/deployments/rhoai-ai-feature-sizing/ui
+1. Generate RAG indices: `uv run generate`
+2. Start LlamaDeploy API server: `uv run -m llama_deploy.apiserver` (runs on port 4501)
+3. Start Upload API: `uv run python src/api_server.py` (runs on port 8001)
+4. Start UI server: `cd ui && npm start` (serves on port 3000)
+5. Deploy workflows: `uv run llamactl deploy deployment.yml`
+6. Access UI at: http://localhost:3000
 
 ## Architecture Overview
 
-This is a production-ready multi-agent system for analyzing Request for Enhancement (RFE) descriptions. The system uses **LlamaDeploy** for Python workflow orchestration and **@llamaindex/server** for the TypeScript frontend.
+This is a containerized multi-agent system for analyzing Request for Enhancement (RFE) descriptions. The system uses **LlamaDeploy** for workflow orchestration, **FastAPI** for file uploads, and **@llamaindex/server** for the TypeScript UI. All services run in a single container.
 
 ### Key Components
 
-**Python Backend (LlamaDeploy)**:
-- Main workflow: `src/rfe_builder_workflow.py` - Multi-agent RFE analysis
-- Secondary workflow: `src/jira_rfe_to_architecture_workflow.py` - Architecture generation from existing RFEs
-- Agent management: `src/agents.py` - Coordinates 16 specialized AI agents
-- RAG system: `src/rag.py` and `src/generate.py` - Vector retrieval for domain knowledge
-- Settings: `src/settings.py` - LLM and embedding model configuration
+**LlamaDeploy Workflow Engine (Port 4501)**:
+- Primary workflow: `src/rfe_builder_workflow.py` - Multi-agent RFE analysis
+- Secondary workflow: `src/jira_rfe_to_architecture_workflow.py` - Architecture generation
+- Agent coordination: `src/agents.py` - Manages 16 specialized AI agents
+- RAG system: `src/rag.py` and `src/generate.py` - Vector index management
+- Configuration: `src/settings.py` - LLM and embedding settings
 
-**TypeScript Frontend**:
-- UI configuration: `ui/index.ts` - Chat interface powered by @llamaindex/server
-- Custom components: `ui/components/` - Progress tracking and agent analysis display
-- Real-time streaming: Connects to LlamaDeploy API for workflow updates
+**FastAPI Upload Service (Port 8001)**:
+- File upload: `src/api_server.py` - REST API for document uploads
+- Upload processing: `src/upload_service.py` - Dynamic content processing
+- RAG updates: Real-time index regeneration
 
-**Agent System**:
+**TypeScript UI Server (Port 3000)**:
+- UI server: `ui/index.ts` - Standalone LlamaIndexServer
+- Custom components: `ui/components/` - Workflow-specific React components
+- Direct integration: Connects to LlamaDeploy workflows
+
+**Multi-Agent System**:
 - 16 specialized personas defined in `src/agents/*.yaml`
-- Each agent has domain expertise (Product Manager, UX Architect, Staff Engineer, etc.)
-- RAG-powered knowledge bases from local directories and GitHub repositories
-- Parallel analysis with synthesis into comprehensive deliverables
+- Roles include Product Manager, Staff Engineer, UX Architect, Delivery Owner, etc.
+- Agent-specific RAG knowledge bases with domain expertise
+- Parallel analysis with coordinated synthesis
 
 ### Data Flow
 
@@ -89,21 +99,46 @@ This is a production-ready multi-agent system for analyzing Request for Enhancem
 ```
 /
 ├── src/                    # Python workflow engine
-│   ├── agents/            # Agent persona configurations (YAML)
-│   ├── prompts/           # Structured prompts for analysis
-│   └── *.py              # Core workflow and RAG components
-├── ui/                    # TypeScript frontend
-│   ├── components/        # Custom UI components
-│   └── index.ts          # Main UI configuration
-├── data/                  # Local knowledge bases
-├── deployment.yml         # LlamaDeploy configuration
+│   ├── agents/            # 16 agent YAML configurations
+│   ├── *.py              # Workflows, RAG, and API components
+│   └── settings.py        # LLM configuration
+├── ui/                    # TypeScript UI server
+│   ├── components/        # Custom React components
+│   ├── layout/           # UI layout components
+│   └── index.ts          # LlamaIndexServer configuration
+├── data/                  # Local knowledge sources
+├── openshift/             # OpenShift deployment manifests
+├── deployment.yml         # LlamaDeploy workflow configuration
+├── Dockerfile            # Container build definition
+├── startup.sh            # Container startup script
 └── pyproject.toml        # Python dependencies and scripts
 ```
 
 ### Development Notes
 
-- The system requires OpenAI API keys configured in `src/.env`
-- Vector indices are stored in `output/python-rag/{agent_name}/` after running `uv run generate`
-- LlamaDeploy provides production-grade orchestration with built-in monitoring
-- Frontend uses real-time streaming for workflow progress updates
-- Agent configurations use JSON Schema validation (`src/agents/agent-schema.json`)
+- OpenAI API keys required in `src/.env` (copy from `env.template`)
+- Vector indices stored in `output/python-rag/{agent_name}/` after `uv run generate`
+- Three services run in single container: LlamaDeploy (4501), Upload API (8001), UI (3000)
+- UI server connects directly to LlamaDeploy workflows
+- All 16 agents use YAML configurations with JSON Schema validation
+
+### Container Deployment
+
+```bash
+# Build container
+./openshift/build.sh
+
+# Deploy to OpenShift
+oc apply -f openshift/
+
+# Check deployment
+oc get pods,services,routes
+```
+
+### OpenShift Architecture
+
+- Single container deployment with 3 exposed ports
+- `rhoai-api` route → LlamaDeploy API (port 4501)
+- `rhoai-ui` route → UI Server (port 3000)
+- Upload API accessible internally (port 8001)
+- Persistent storage for uploads and vector indices
