@@ -70,7 +70,7 @@ RUN chmod -R g+w /app/src /app/output /app/deploy.py /app/deployment.yml /app/.v
     chmod g+w /tmp
 
 # Expose ports
-EXPOSE 4501 8000
+EXPOSE 4501 8000 3000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \

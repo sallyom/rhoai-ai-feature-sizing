@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: rhoai-ai-feature-sizing
-  namespace: rhoai-ai-feature-sizing
   labels:
     app: rhoai-ai-feature-sizing
 spec:
@@ -24,6 +23,8 @@ spec:
           name: control-plane
         - containerPort: 8000
           name: api-server
+        - containerPort: 3000
+          name: ui
         env:
         - name: PYTHONUNBUFFERED
           value: "1"
@@ -39,11 +40,11 @@ spec:
           mountPath: /app/output
         resources:
           requests:
-            memory: "256Mi"
-            cpu: "100m"
+            memory: "4Gi"
+            cpu: "2000m"
           limits:
-            memory: "1Gi"
-            cpu: "500m"
+            memory: "8Gi"
+            cpu: "4000m"
       volumes:
       - name: uploads-storage
         persistentVolumeClaim:
