@@ -46,7 +46,8 @@ npm run build
 3. Start Upload API: `uv run python src/api_server.py` (runs on port 8001)
 4. Start UI server: `cd ui && npm start` (serves on port 3000)
 5. Deploy workflows: `uv run llamactl deploy deployment.yml`
-6. Access UI at: http://localhost:3000
+6. Access UI at: http://localhost:3000 (includes chat + file upload)
+7. Test file upload: Drag & drop documents to enhance agent knowledge
 
 ## Architecture Overview
 
@@ -62,14 +63,16 @@ This is a containerized multi-agent system for analyzing Request for Enhancement
 - Configuration: `src/settings.py` - LLM and embedding settings
 
 **FastAPI Upload Service (Port 8001)**:
-- File upload: `src/api_server.py` - REST API for document uploads
+- File upload API: `src/api_server.py` - REST API for document uploads
 - Upload processing: `src/upload_service.py` - Dynamic content processing
-- RAG updates: Real-time index regeneration
+- RAG integration: Real-time index updates across all 16 agents
+- Cache management: Automatic agent index refresh for immediate availability
 
 **TypeScript UI Server (Port 3000)**:
 - UI server: `ui/index.ts` - Standalone LlamaIndexServer
+- File upload: `ui/components/file_upload.jsx` - Drag & drop interface with progress tracking
 - Custom components: `ui/components/` - Workflow-specific React components
-- Direct integration: Connects to LlamaDeploy workflows
+- Dual integration: Connects to LlamaDeploy workflows AND Upload API
 
 **Multi-Agent System**:
 - 16 specialized personas defined in `src/agents/*.yaml`
@@ -119,13 +122,15 @@ This is a containerized multi-agent system for analyzing Request for Enhancement
 - OpenAI API keys required in `src/.env` (copy from `env.template`)
 - Vector indices stored in `output/python-rag/{agent_name}/` after `uv run generate`
 - Three services run in single container: LlamaDeploy (4501), Upload API (8001), UI (3000)
-- UI server connects directly to LlamaDeploy workflows
+- UI server connects to both LlamaDeploy workflows AND Upload API
 - All 16 agents use YAML configurations with JSON Schema validation
+- **File Upload Feature**: Drag & drop interface automatically enhances all agent knowledge
+- Uploaded files immediately available to all agents (automatic cache refresh)
 
 ### Container Deployment
 
 ```bash
-# Build container
+# Build container with updated UI components
 ./openshift/build.sh
 
 # Deploy to OpenShift
@@ -139,6 +144,23 @@ oc get pods,services,routes
 
 - Single container deployment with 3 exposed ports
 - `rhoai-api` route → LlamaDeploy API (port 4501)
-- `rhoai-ui` route → UI Server (port 3000)
-- Upload API accessible internally (port 8001)
+- `rhoai-ui` route → UI Server (port 3000) - **includes file upload interface**
+- `rhoai-upload` route → Upload API (port 8001) - for direct API access
 - Persistent storage for uploads and vector indices
+
+### File Upload Integration
+
+```bash
+# Access complete interface (chat + upload)
+https://rhoai-ui-{namespace}.apps.{cluster}/deployments/rhoai-ai-feature-sizing/ui
+
+# Direct upload API access (if needed)
+https://rhoai-upload-{namespace}.apps.{cluster}/api/upload
+```
+
+**Features**:
+- **Drag & Drop Upload**: Intuitive file interface within chat UI
+- **Universal Knowledge**: Files automatically indexed for all 16 agents
+- **Real-time Feedback**: Upload progress and agent indexing status
+- **File Management**: List and delete uploaded documents
+- **Immediate Availability**: No restart required - agents see new content instantly

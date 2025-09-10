@@ -126,7 +126,12 @@ RHOAI implements a containerized multi-agent system with **LlamaDeploy workflows
 - `src/generate.py` - RAG index generation
 - `src/ingestion.py` - Content ingestion pipeline
 
-**Features**: Dynamic file upload, RAG index updates, agent knowledge refresh
+**Features**: 
+- Dynamic file upload with drag & drop interface
+- Real-time RAG index updates across all 16 agents
+- Automatic agent cache refresh for immediate availability
+- Upload progress tracking and indexing feedback
+- File management (list, delete uploaded documents)
 
 ## Data Flow
 
@@ -140,14 +145,18 @@ RHOAI implements a containerized multi-agent system with **LlamaDeploy workflows
 
 ### Runtime Phase (Multi-Agent Workflow)
 
-1. **User Input**: RFE submission via UI chat interface (port 3000)
-2. **Workflow Trigger**: LlamaDeploy receives task via control plane (port 4501)
-3. **Agent Orchestration**: Initialize all 16 agent personas with their indices
-4. **Parallel Analysis**: Concurrent analysis by all specialized agents
-5. **Context Retrieval**: Agent-specific RAG queries for domain knowledge
-6. **Synthesis**: Combine analyses into comprehensive RFE document
-7. **Artifact Generation**: Create implementation plans, timelines, architecture
-8. **Streaming Response**: Real-time updates via UI components
+1. **Knowledge Enhancement** (Optional): Upload documents via drag & drop interface
+   - Files processed and indexed across all 16 agent knowledge bases
+   - Real-time feedback on indexing success and agent updates
+   - Automatic cache refresh ensures immediate availability
+2. **User Input**: RFE submission via UI chat interface (port 3000)
+3. **Workflow Trigger**: LlamaDeploy receives task via control plane (port 4501)
+4. **Agent Orchestration**: Initialize all 16 agent personas with enhanced indices
+5. **Parallel Analysis**: Concurrent analysis by all specialized agents
+6. **Context Retrieval**: Agent-specific RAG queries including uploaded knowledge
+7. **Synthesis**: Combine analyses into comprehensive RFE document
+8. **Artifact Generation**: Create implementation plans, timelines, architecture
+9. **Streaming Response**: Real-time updates via UI components
 
 ### API Integration
 
@@ -166,12 +175,15 @@ All services run in a single container with inter-service communication:
 UI Server (port 3000)  ←──HTTP API──→  LlamaDeploy (port 4501)
 │                                           │
 ├── Chat interface                          ├── Workflow orchestration  
-├── Custom components                       ├── Multi-agent coordination
-└── Real-time streaming                     └── Task management
-                                            │
-                                            ├──→ Upload API (port 8001)
-                                            │    ├── File processing
-                                            │    └── Dynamic RAG updates
+├── File upload component                   ├── Multi-agent coordination
+├── Custom workflow components              ├── Task management
+└── Real-time streaming                     └── Enhanced RAG queries
+           │                                │
+           └──→ Upload API (port 8001) ←────┘
+                ├── File processing
+                ├── Universal RAG indexing
+                ├── Agent cache management
+                └── Upload progress tracking
 ```
 
 ### Shared Storage Schema
@@ -185,6 +197,11 @@ output/python-rag/{agent_persona}/
 ├── index_store.json      # LlamaIndex configuration  
 ├── graph_store.json      # Knowledge relationships
 └── metadata.json         # Agent statistics and config
+
+uploads/                  # User-uploaded knowledge files
+├── requirements.pdf      # Uploaded documents
+├── architecture.md       # Available to all agents
+└── user_feedback.txt     # Real-time knowledge enhancement
 ```
 
 ### Agent Configuration Schema
@@ -208,10 +225,11 @@ systemMessage: |
   customer needs into business value...
 
 dataSources:
-  - "data/product-management"
+  - "data/product-management"  # Static knowledge sources
   - name: "competitor-analysis"
     type: "github"
     source: "company/market-research"
+  # NOTE: Uploaded files via UI are automatically added to all agents
 ```
 
 ## LlamaDeploy Workflow Architecture
@@ -438,13 +456,83 @@ uv run pytest
 - **Health Checks**: `/health`
 
 **Upload API (Port 8001)**:
-- **File Upload**: `/upload/files/`
-- **RAG Management**: `/rag/regenerate`
-- **API Documentation**: `/docs`
+- **File Upload**: `POST /api/upload` - Upload files with real-time RAG indexing
+- **File Management**: `GET /api/uploads` (list), `DELETE /api/uploads/{filename}` (delete)
+- **RAG Management**: `GET /api/rag/status`, `POST /api/rag/refresh` - Index status and cache control
+- **API Documentation**: `/docs` - Interactive FastAPI documentation
 
 **UI Server (Port 3000)**:
-- **Chat Interface**: Direct web interface
-- **Custom Components**: Workflow-specific UI elements
+- **Chat Interface**: Direct web interface with file upload integration
+- **File Upload Component**: Drag & drop interface with progress tracking
+- **Custom Components**: Workflow-specific UI elements and upload feedback
+
+## File Upload and Knowledge Enhancement
+
+### Dynamic Content Upload
+
+The system supports real-time knowledge enhancement through the integrated file upload service:
+
+```
+┌─────────────────────────────────────────┐
+│         DYNAMIC KNOWLEDGE UPLOAD        │
+│                                         │
+│ 📤 User Interface                       │
+│   • Drag & drop file upload            │
+│   • Supported: TXT, MD, PDF, DOC, DOCX │
+│   • Real-time upload progress          │
+│   • File management (list, delete)      │
+│                                         │
+│ ⚡ Processing Pipeline                   │
+│   • Document content extraction         │
+│   • Text chunking and preprocessing     │
+│   • Metadata enrichment                 │
+│                                         │
+│ 🧠 Universal Agent Enhancement          │
+│   • Simultaneous indexing to all 16    │
+│     agent knowledge bases               │
+│   • Automatic cache refresh             │
+│   • Immediate availability              │
+│                                         │
+│ 📊 Upload Feedback                      │
+│   • Indexing success per agent         │
+│   • Document processing statistics      │
+│   • Real-time status updates           │
+└─────────────────────────────────────────┘
+```
+
+### Upload Process Flow
+
+1. **File Selection**: User uploads via drag & drop or file picker
+2. **Content Processing**: Extract text content and create document chunks
+3. **Metadata Enhancement**: Add upload timestamp, source type, filename
+4. **Universal Indexing**: Insert documents into all 16 agent RAG indices
+5. **Cache Refresh**: Clear agent index caches for immediate availability
+6. **Feedback Display**: Show indexing results and agent update status
+
+### Agent Knowledge Access
+
+```python
+# Each agent queries enhanced knowledge during analysis
+context = await agent_manager.get_rag_context(
+    persona="PRODUCT_MANAGER", 
+    query="user requirements and constraints"
+)
+
+# Returns context including uploaded files:
+# [Context 1 from /app/uploads/requirements.pdf]:
+# User requires multi-tenant architecture with...
+# 
+# [Context 2 from data/product-management/strategy.md]:
+# Strategic considerations for product roadmap...
+```
+
+### Knowledge Enhancement Benefits
+
+- **Contextual Analysis**: Agents incorporate uploaded requirements, specifications, and constraints
+- **Domain Expertise**: Each agent applies their specialty to shared uploaded knowledge
+- **Real-time Updates**: No restart required - uploads immediately enhance all agent capabilities
+- **Metadata Tracking**: Full traceability of uploaded content sources in analysis results
+- **Universal Access**: All 16 agents benefit from any uploaded document
 
 ### External Systems
 

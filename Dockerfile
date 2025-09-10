@@ -23,7 +23,10 @@ COPY deployment.yml ./
 
 # Build UI dependencies and compile TypeScript
 WORKDIR /app/ui
-RUN npm install && npx tsc
+RUN npm cache clean --force && \
+    npm install --no-optional && \
+    chmod +x node_modules/.bin/* && \
+    npx tsc
 WORKDIR /app
 
 # Create directories and set permissions for OpenShift
@@ -35,7 +38,7 @@ RUN mkdir -p output/python-rag uploads .config/llamactl && \
 # Environment setup
 ENV HOME=/app
 
-EXPOSE 4501 8001 3000
+EXPOSE 4501 3000
 
 COPY startup.sh ./
 RUN chmod +x startup.sh

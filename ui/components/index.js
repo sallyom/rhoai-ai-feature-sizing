@@ -4,7 +4,6 @@ import MultiAgentAnalysis from './multi_agent_analysis.jsx';
 import CreateRFEButton from './create_rfe_button.jsx';
 import JiraRFEWorkflowProgress from './jira_rfe_workflow_progress.jsx';
 import AgentAnalysisSummary from './agent_analysis_summary.jsx';
-import FileUpload from './file_upload.jsx';
 
 export {
   RFEBuilderProgress,
@@ -12,7 +11,6 @@ export {
   CreateRFEButton,
   JiraRFEWorkflowProgress,
   AgentAnalysisSummary,
-  FileUpload,
 };
 
 // Default export for convenience
@@ -22,5 +20,4 @@ export default {
   CreateRFEButton,
   JiraRFEWorkflowProgress,
   AgentAnalysisSummary,
-  FileUpload,
 };

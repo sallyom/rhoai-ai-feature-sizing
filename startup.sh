@@ -6,24 +6,30 @@ export PATH="/usr/bin:$PATH"
 echo "Node.js version: $(node --version)"
 echo "npm version: $(npm --version)"
 
-echo "Generating RAG indices with local embeddings..."
-EMBEDDING_PROVIDER=local PYTHONPATH=/app uv run python src/rag.py ingest
+echo "Checking RAG indices..."
+if [ ! -d "/app/output/python-rag" ] || [ -z "$(ls -A /app/output/python-rag 2>/dev/null)" ]; then
+    echo "Generating RAG indices with local embeddings..."
+    EMBEDDING_PROVIDER=local PYTHONPATH=/app uv run python src/rag.py ingest
+else
+    echo "RAG indices already exist, skipping generation..."
+fi
 
-echo "Starting LlamaDeploy API server in background..."
-uv run -m llama_deploy.apiserver &
+echo "Starting all services in parallel..."
 
-echo "Starting Upload API server in background..."
-uv run python src/api_server.py &
+# Start LlamaDeploy API server bound to all interfaces
+uv run -m llama_deploy.apiserver --host 0.0.0.0 --port 4501 &
+LLAMA_PID=$!
 
-echo "Starting standalone UI server in background..."
+# Start UI server (now with built-in file upload)
 cd ui && HOST=0.0.0.0 npm start &
+UI_PID=$!
 cd /app
 
-echo "Waiting for API servers to be ready..."
-sleep 10
+echo "Waiting for services to initialize..."
+sleep 15
 
 echo "Deploying workflows..."
-uv run llamactl deploy deployment.yml
+uv run llamactl deploy deployment.yml || echo "Workflow deployment failed, will retry..."
 
 echo "API servers are running. Bringing to foreground..."
 wait

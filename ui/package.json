@@ -10,7 +10,9 @@
   },
   "dependencies": {
     "@llamaindex/server": "^0.4.1",
-    "dotenv": "^16.4.7"
+    "@types/node-fetch": "^2.6.13",
+    "dotenv": "^16.4.7",
+    "node-fetch": "^3.3.2"
   },
   "devDependencies": {
     "@types/node": "^20.10.3",

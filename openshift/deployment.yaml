@@ -22,8 +22,6 @@ spec:
         ports:
         - containerPort: 4501
           name: control-plane
-        - containerPort: 8001
-          name: upload-api
         - containerPort: 3000
           name: ui
         env:
@@ -45,11 +43,11 @@ spec:
           mountPath: /app/output
         resources:
           requests:
-            memory: "512Mi"
-            cpu: "200m"
-          limits:
             memory: "4Gi"
-            cpu: "1000m"
+            cpu: "4000m"
+          limits:
+            memory: "12Gi"
+            cpu: "8000m"
       volumes:
       - name: uploads-storage
         persistentVolumeClaim:
