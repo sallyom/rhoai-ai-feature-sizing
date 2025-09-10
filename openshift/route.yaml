@@ -6,9 +6,8 @@ metadata:
     component: api
   name: rhoai-api
 spec:
-  host: ''
   port:
-    targetPort: api-server
+    targetPort: control-plane
   tls:
     insecureEdgeTerminationPolicy: Redirect
     termination: edge
@@ -26,9 +25,9 @@ metadata:
     component: ui
   name: rhoai-ui
 spec:
-  host: ''
   port:
     targetPort: ui
+  path: /deployments/rhoai-ai-feature-sizing/ui
   tls:
     insecureEdgeTerminationPolicy: Redirect
     termination: edge

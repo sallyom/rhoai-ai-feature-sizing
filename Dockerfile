@@ -19,14 +19,15 @@ COPY ui ./ui
 COPY data ./data
 COPY deployment.yml ./
 
-# Install UI dependencies
+# Install and build UI dependencies
 WORKDIR /app/ui
-RUN npm i -g pnpm
+RUN npm install
 WORKDIR /app
 
 RUN uv run generate
 
-RUN chmod -R g+w .venv/
+RUN chmod -R g+w .venv/ && \
+    chmod -R 777 ui/node_modules/ 2>/dev/null || true
 
 ENV HOME=/app
 RUN mkdir -p /app/.config/llamactl && chmod -R 777 /app/.config
